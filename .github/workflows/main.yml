@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +25,14 @@ jobs:
       - name: Check Application
         run: node --check app.js
 
-      - name: Build Successful
-        run: echo "DevOps PBL3 application build successful!"
+      - name: Deploy to Google Cloud VM
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/devops-pbl3-app
+            git pull origin main
+            npm install
+            pm2 restart app || pm2 start app.js --name app
